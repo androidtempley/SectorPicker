@@ -16,6 +16,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     companion object {
         const val MARKER_1 = 1
         const val MARKER_2 = 2
+        @Suppress("MayBeConstant") private val ENABLE_LOGGING = false
     }
 
     private var mNumPoints: Int
@@ -24,6 +25,12 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
         set(points) {
             mNumPoints = points
             recalculatePoints()
+
+            if(mMarker1.pointIdx >= mNumPoints)
+                mMarker1.pointIdx = mNumPoints - 1
+            if(mMarker2.pointIdx >= mNumPoints)
+                mMarker2.pointIdx = mNumPoints - 1
+
             invalidate()
             requestLayout()
         }
@@ -175,7 +182,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 var yMax = mPoints[mMarker1.pointIdx].yPos + mMarker1.radius
 
                 if (x in xMin..xMax && y in yMin..yMax) {
-                    Log.d("onDown", "Marker1 Down")
+                    SectorPickerLog("onDown", "Marker1 Down")
                     mMarker1.isMoving = true
                     return true
                 }
@@ -187,11 +194,11 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 yMax = mPoints[mMarker2.pointIdx].yPos + mMarker2.radius
 
                 return if(x in xMin..xMax && y in yMin..yMax) {
-                    Log.d("onDown", "Marker2 Down")
+                    SectorPickerLog("onDown", "Marker2 Down")
                     mMarker2.isMoving = true
                     true
                 } else {
-                    Log.d("onDown", "Neither marker")
+                    SectorPickerLog("onDown", "Neither marker")
                     false
                 }
             }
@@ -200,7 +207,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
 
         override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
             // Calculate best position for marker after motion ends
-            Log.d("onScroll", "Moving from ${e1!!.x},${e1.y} to ${e2!!.x},${e2.y}")
+            SectorPickerLog("onScroll", "Moving from ${e1!!.x},${e1.y} to ${e2!!.x},${e2.y}")
 
             // Consider the circle split into mNumPoints sectors, with ach point at the centre of each arc
             // Test each sector to see if scroll end is within
@@ -213,7 +220,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 // Point is within sector if it is clockwise of the first vector, and anti-clockwise of the second vector
                 if(!isVectorClockwise(vectorPoint1, relPoint) && isVectorClockwise(vectorPoint2, relPoint))
                 {
-                    Log.d("Sector", i.toString())
+                    SectorPickerLog("Sector", i.toString())
                     when {
                         mMarker1.isMoving -> {
                             mMarker1.pointIdx = i
@@ -280,6 +287,12 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
 
     private fun isVectorClockwise(v1: Point, v2: Point): Boolean {
         return ((-v1.xPos * v2.yPos) + (v1.yPos * v2.xPos)) > 0
+    }
+
+    @Suppress("FunctionName")
+    private fun SectorPickerLog(tag: String, msg: String) {
+        if(ENABLE_LOGGING)
+            Log.d("SectorPicker $tag", msg)
     }
 
     class Marker(mColor: Int, mRadius: Float, mLineWidth: Float, mPointIdx: Int) {
