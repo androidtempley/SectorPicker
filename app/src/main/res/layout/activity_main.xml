@@ -6,13 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <com.github.androidtempley.sectorpicker.SectorPicker
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/sectorPicker"
+        android:paddingHorizontal="32dp"
+        app:numPoints="12"
+        app:pointRadius="8dp"
+        app:markerRadius="20dp"
+        app:markerLineWidth="8dp"
+        app:fillColor="#5500AA00" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
