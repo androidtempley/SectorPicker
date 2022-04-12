@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SectorPicker">
+        <attr name="numPoints" format="integer" />
+        <attr name="pointColor" format="color" />
+        <attr name="marker1Color" format="color" />
+        <attr name="marker2Color" format="color" />
+        <attr name="fillColor" format="color" />
+        <attr name="pointRadius" format="dimension" />
+        <attr name="markerRadius" format="dimension" />
+        <attr name="markerLineWidth" format="dimension" />
+        <attr name="marker1StartPosition" format="integer" />
+        <attr name="marker2StartPosition" format="integer" />
+    </declare-styleable>
+</resources>
