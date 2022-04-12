@@ -1,2 +1,3 @@
+include ':SectorPicker'
 include ':app'
 rootProject.name = "SectorPicker"
