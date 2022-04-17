@@ -179,13 +179,14 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
 
     private val gestureListener = object: GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent?): Boolean {
+            val touchMargin = 1.2f          // Apply 20% increase to marker size as additional touch area
             e?.apply {
                 // Check position on down event and return false if not within either Marker
                 // Check Marker 1
-                var xMin = mPoints[mMarker1.pointIdx].xPos - mMarker1.radius
-                var xMax = mPoints[mMarker1.pointIdx].xPos + mMarker1.radius
-                var yMin = mPoints[mMarker1.pointIdx].yPos - mMarker1.radius
-                var yMax = mPoints[mMarker1.pointIdx].yPos + mMarker1.radius
+                var xMin = mPoints[mMarker1.pointIdx].xPos - mMarker1.radius * touchMargin
+                var xMax = mPoints[mMarker1.pointIdx].xPos + mMarker1.radius * touchMargin
+                var yMin = mPoints[mMarker1.pointIdx].yPos - mMarker1.radius * touchMargin
+                var yMax = mPoints[mMarker1.pointIdx].yPos + mMarker1.radius * touchMargin
 
                 if (x in xMin..xMax && y in yMin..yMax) {
                     SectorPickerLog("onDown", "Marker1 Down")
@@ -194,10 +195,10 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 }
 
                 // Check Marker 2
-                xMin = mPoints[mMarker2.pointIdx].xPos - mMarker2.radius
-                xMax = mPoints[mMarker2.pointIdx].xPos + mMarker2.radius
-                yMin = mPoints[mMarker2.pointIdx].yPos - mMarker2.radius
-                yMax = mPoints[mMarker2.pointIdx].yPos + mMarker2.radius
+                xMin = mPoints[mMarker2.pointIdx].xPos - mMarker2.radius * touchMargin
+                xMax = mPoints[mMarker2.pointIdx].xPos + mMarker2.radius * touchMargin
+                yMin = mPoints[mMarker2.pointIdx].yPos - mMarker2.radius * touchMargin
+                yMax = mPoints[mMarker2.pointIdx].yPos + mMarker2.radius * touchMargin
 
                 return if(x in xMin..xMax && y in yMin..yMax) {
                     SectorPickerLog("onDown", "Marker2 Down")
