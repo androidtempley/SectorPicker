@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SectorPicker</string>
+
+    <string name="status">Marker 1 at: %1$d\nMarker 2 at: %2$d</string>
+</resources>

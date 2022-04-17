@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/statsText"
+        android:textAlignment="center"
+        android:text="Put text here..."
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="24dp"
+        android:textSize="25sp" />
+
+    <com.github.androidtempley.sectorpicker.SectorPicker
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/sectorPicker"
+        android:paddingHorizontal="32dp"
+        app:numPoints="12"
+        app:pointRadius="8dp"
+        app:markerRadius="20dp"
+        app:markerLineWidth="8dp"
+        app:fillColor="#5500AA00" />
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/seekBar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="32dp"
+        android:layout_marginHorizontal="16dp"
+        android:min="2"
+        android:max="50" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
