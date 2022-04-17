@@ -21,6 +21,23 @@ Include 'SectorPicker' in your layout XML:
         app:fillColor="#5500AA00" />
 ```
 
+Add as a dependency into your application build.gradle file:
+```groovy
+dependencies {
+    implementation 'com.github.androidtempley:SectorPicker:v1.0.1'
+}
+```
+
+You will also need to add the JitPack repository to your root build.gradle:
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+	}
+}
+```
+
 License
 -------
 
