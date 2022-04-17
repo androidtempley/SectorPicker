@@ -19,6 +19,8 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
         @Suppress("MayBeConstant") private val ENABLE_LOGGING = false
     }
 
+    private var listener: SectorPickerEventListener? = null
+
     private var mNumPoints: Int
     var numberOfPoints: Int
         get() = mNumPoints
@@ -90,9 +92,13 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             else   ->   return
         }
 
+        listener?.onMarkerMoved(marker, position)
+
         invalidate()
         requestLayout()
     }
+
+    fun setEventListener(listener: SectorPickerEventListener) { this.listener = listener }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         // Account for padding
