@@ -31,11 +31,11 @@ dependencies {
 You will also need to add the JitPack repository to your root build.gradle:
 ```groovy
 allprojects {
-		repositories {
-			...
-			maven { url 'https://jitpack.io' }
-		}
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
 	}
+}
 ```
 
 License
