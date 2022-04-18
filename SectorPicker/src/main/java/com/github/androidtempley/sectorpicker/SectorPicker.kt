@@ -28,10 +28,14 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             mNumPoints = points
             recalculatePoints()
 
-            if(mMarker1.pointIdx >= mNumPoints)
+            if(mMarker1.pointIdx >= mNumPoints) {
                 mMarker1.pointIdx = mNumPoints - 1
-            if(mMarker2.pointIdx >= mNumPoints)
+                listener?.onMarkerMoved(MARKER_1, mMarker1.pointIdx)
+            }
+            if(mMarker2.pointIdx >= mNumPoints) {
                 mMarker2.pointIdx = mNumPoints - 1
+                listener?.onMarkerMoved(MARKER_2, mMarker2.pointIdx)
+            }
 
             invalidate()
             requestLayout()
