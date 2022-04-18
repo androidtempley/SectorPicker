@@ -167,8 +167,14 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             if(!result) {
                 when(event?.action) {
                     MotionEvent.ACTION_UP -> {
-                        mMarker1.isMoving = false       // Clear moving flag
-                        mMarker2.isMoving = false
+                        if(mMarker1.isMoving) {
+                            mMarker1.isMoving = false       // Clear moving flag
+                            listener?.onMarkerMoved(MARKER_1, mMarker1.pointIdx)
+                        }
+                        if(mMarker2.isMoving) {
+                            mMarker2.isMoving = false       // Clear moving flag
+                            listener?.onMarkerMoved(MARKER_2, mMarker2.pointIdx)
+                        }
                         true
                     }
                     else -> false
