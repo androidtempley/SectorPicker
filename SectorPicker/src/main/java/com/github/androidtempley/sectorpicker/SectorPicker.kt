@@ -16,7 +16,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     companion object {
         const val MARKER_1 = 1
         const val MARKER_2 = 2
-        @Suppress("MayBeConstant") private val ENABLE_LOGGING = false
+        private const val ENABLE_LOGGING = false
     }
 
     private var listener: SectorPickerEventListener? = null
