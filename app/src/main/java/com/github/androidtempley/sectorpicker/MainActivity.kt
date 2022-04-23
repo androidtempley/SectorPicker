@@ -6,6 +6,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.github.androidtempley.sectorpicker.SectorPicker
+import com.github.androidtempley.sectorpicker.SectorPickerEventListener
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,13 +33,13 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        Thread {
-            while(true) {
+        sectorPicker.setEventListener(object: SectorPickerEventListener {
+            override fun onMarkerMoved(marker: Int, position: Int) {
                 updateStatsText()
-
-                Thread.sleep(500)
             }
-        }.start()
+        })
+
+        updateStatsText()
     }
 
     private fun updateStatsText() {

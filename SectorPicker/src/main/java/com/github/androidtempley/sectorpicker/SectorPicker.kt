@@ -16,8 +16,10 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     companion object {
         const val MARKER_1 = 1
         const val MARKER_2 = 2
-        @Suppress("MayBeConstant") private val ENABLE_LOGGING = false
+        private const val ENABLE_LOGGING = false
     }
+
+    private var listener: SectorPickerEventListener? = null
 
     private var mNumPoints: Int
     var numberOfPoints: Int
@@ -26,10 +28,14 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             mNumPoints = points
             recalculatePoints()
 
-            if(mMarker1.pointIdx >= mNumPoints)
+            if(mMarker1.pointIdx >= mNumPoints) {
                 mMarker1.pointIdx = mNumPoints - 1
-            if(mMarker2.pointIdx >= mNumPoints)
+                listener?.onMarkerMoved(MARKER_1, mMarker1.pointIdx)
+            }
+            if(mMarker2.pointIdx >= mNumPoints) {
                 mMarker2.pointIdx = mNumPoints - 1
+                listener?.onMarkerMoved(MARKER_2, mMarker2.pointIdx)
+            }
 
             invalidate()
             requestLayout()
@@ -90,9 +96,13 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             else   ->   return
         }
 
+        listener?.onMarkerMoved(marker, position)
+
         invalidate()
         requestLayout()
     }
+
+    fun setEventListener(listener: SectorPickerEventListener) { this.listener = listener }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         // Account for padding
@@ -161,8 +171,14 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             if(!result) {
                 when(event?.action) {
                     MotionEvent.ACTION_UP -> {
-                        mMarker1.isMoving = false       // Clear moving flag
-                        mMarker2.isMoving = false
+                        if(mMarker1.isMoving) {
+                            mMarker1.isMoving = false       // Clear moving flag
+                            listener?.onMarkerMoved(MARKER_1, mMarker1.pointIdx)
+                        }
+                        if(mMarker2.isMoving) {
+                            mMarker2.isMoving = false       // Clear moving flag
+                            listener?.onMarkerMoved(MARKER_2, mMarker2.pointIdx)
+                        }
                         true
                     }
                     else -> false
@@ -173,13 +189,14 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
 
     private val gestureListener = object: GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent?): Boolean {
+            val touchMargin = 1.2f          // Apply 20% increase to marker size as additional touch area
             e?.apply {
                 // Check position on down event and return false if not within either Marker
                 // Check Marker 1
-                var xMin = mPoints[mMarker1.pointIdx].xPos - mMarker1.radius
-                var xMax = mPoints[mMarker1.pointIdx].xPos + mMarker1.radius
-                var yMin = mPoints[mMarker1.pointIdx].yPos - mMarker1.radius
-                var yMax = mPoints[mMarker1.pointIdx].yPos + mMarker1.radius
+                var xMin = mPoints[mMarker1.pointIdx].xPos - mMarker1.radius * touchMargin
+                var xMax = mPoints[mMarker1.pointIdx].xPos + mMarker1.radius * touchMargin
+                var yMin = mPoints[mMarker1.pointIdx].yPos - mMarker1.radius * touchMargin
+                var yMax = mPoints[mMarker1.pointIdx].yPos + mMarker1.radius * touchMargin
 
                 if (x in xMin..xMax && y in yMin..yMax) {
                     SectorPickerLog("onDown", "Marker1 Down")
@@ -188,10 +205,10 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 }
 
                 // Check Marker 2
-                xMin = mPoints[mMarker2.pointIdx].xPos - mMarker2.radius
-                xMax = mPoints[mMarker2.pointIdx].xPos + mMarker2.radius
-                yMin = mPoints[mMarker2.pointIdx].yPos - mMarker2.radius
-                yMax = mPoints[mMarker2.pointIdx].yPos + mMarker2.radius
+                xMin = mPoints[mMarker2.pointIdx].xPos - mMarker2.radius * touchMargin
+                xMax = mPoints[mMarker2.pointIdx].xPos + mMarker2.radius * touchMargin
+                yMin = mPoints[mMarker2.pointIdx].yPos - mMarker2.radius * touchMargin
+                yMax = mPoints[mMarker2.pointIdx].yPos + mMarker2.radius * touchMargin
 
                 return if(x in xMin..xMax && y in yMin..yMax) {
                     SectorPickerLog("onDown", "Marker2 Down")
