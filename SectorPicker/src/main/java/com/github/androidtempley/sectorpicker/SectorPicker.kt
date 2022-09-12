@@ -43,8 +43,22 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             requestLayout()
         }
     private var mPointsColor: Int
+    var pointColor: Int
+        get() = mPointsColor
+        set(color) {
+            mPointsColor = color
+            invalidate()
+            requestLayout()
+        }
     private var mPointsRadius: Float
     private var mFillColor: Int
+    var fillColor: Int
+        get() = mFillColor
+        set(color) {
+            mFillColor = color
+            invalidate()
+            requestLayout()
+        }
     var fillDirection = CLOCKWISE
 
     private var mMarker1: Marker
