@@ -73,6 +73,8 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     private var mCenterY = 0f
     private var mFillBounds: RectF? = null
 
+    var touchMargin = 1.2f      // Apply 20% increase to marker size as additional touch area
+
     init {
         val ta = context.theme.obtainStyledAttributes(attrs, R.styleable.SectorPicker, 0, 0)
         try {
@@ -176,7 +178,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 mNumPoints - 1
             }
 
-            // Draw fill - always fill Marker 1 -> Marker 2, clockwise
+            // Draw fill - always fill Marker 1 -> Marker 2, check direction
             val start = ((if (fillDirection) marker1Pos else marker2Pos) * 360f / mNumPoints)
             var sweep = ((if(fillDirection) marker2Pos else marker1Pos) * 360f / mNumPoints) - start
             if(sweep < 0)
@@ -218,7 +220,6 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
 
     private val gestureListener = object: GestureDetector.SimpleOnGestureListener() {
         override fun onDown(e: MotionEvent?): Boolean {
-            val touchMargin = 1.2f          // Apply 20% increase to marker size as additional touch area
             e?.apply {
                 // Check position on down event and return false if not within either Marker
                 // Check Marker 1
