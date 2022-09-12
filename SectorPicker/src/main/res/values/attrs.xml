@@ -6,6 +6,10 @@
         <attr name="marker1Color" format="color" />
         <attr name="marker2Color" format="color" />
         <attr name="fillColor" format="color" />
+        <attr name="fillDirection" format="enum">
+            <enum name="clockwise" value="0" />
+            <enum name="anticlockwise" value="1" />
+        </attr>
         <attr name="pointRadius" format="dimension" />
         <attr name="markerRadius" format="dimension" />
         <attr name="markerLineWidth" format="dimension" />

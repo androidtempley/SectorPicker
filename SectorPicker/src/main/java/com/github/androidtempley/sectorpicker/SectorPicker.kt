@@ -16,8 +16,12 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     companion object {
         const val MARKER_1 = 1
         const val MARKER_2 = 2
-        @Suppress("MayBeConstant") private val ENABLE_LOGGING = false
+        const val CLOCKWISE = true
+        const val ANTICLOCKWISE = !CLOCKWISE
+        private const val ENABLE_LOGGING = false
     }
+
+    private var listener: SectorPickerEventListener? = null
 
     private var mNumPoints: Int
     var numberOfPoints: Int
@@ -26,17 +30,38 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             mNumPoints = points
             recalculatePoints()
 
-            if(mMarker1.pointIdx >= mNumPoints)
+            if(mMarker1.pointIdx >= mNumPoints) {
                 mMarker1.pointIdx = mNumPoints - 1
-            if(mMarker2.pointIdx >= mNumPoints)
+                listener?.onMarkerMoved(MARKER_1, mMarker1.pointIdx)
+            }
+            if(mMarker2.pointIdx >= mNumPoints) {
                 mMarker2.pointIdx = mNumPoints - 1
+                listener?.onMarkerMoved(MARKER_2, mMarker2.pointIdx)
+            }
 
             invalidate()
             requestLayout()
         }
     private var mPointsColor: Int
+    var pointColor: Int
+        get() = mPointsColor
+        set(color) {
+            mPointsColor = color
+            pointPaint.color = color
+            invalidate()
+            requestLayout()
+        }
     private var mPointsRadius: Float
     private var mFillColor: Int
+    var fillColor: Int
+        get() = mFillColor
+        set(color) {
+            mFillColor = color
+            fillPaint.color = color
+            invalidate()
+            requestLayout()
+        }
+    var fillDirection = CLOCKWISE
 
     private var mMarker1: Marker
     private var mMarker2: Marker
@@ -47,6 +72,8 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     private var mCenterX = 0f
     private var mCenterY = 0f
     private var mFillBounds: RectF? = null
+
+    var touchMargin = 1.2f      // Apply 20% increase to marker size as additional touch area
 
     init {
         val ta = context.theme.obtainStyledAttributes(attrs, R.styleable.SectorPicker, 0, 0)
@@ -63,6 +90,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 ta.getDimension(R.styleable.SectorPicker_markerRadius, 0f),
                 ta.getDimension(R.styleable.SectorPicker_markerLineWidth, 0f),
                 ta.getInteger(R.styleable.SectorPicker_marker2StartPosition, 0))
+            fillDirection = ta.getInteger(R.styleable.SectorPicker_fillDirection, 0) == 0
 
             if(mMarker1.pointIdx >= mNumPoints)
                 throw IndexOutOfBoundsException("Marker 1 position out of bounds, position ${mMarker1.pointIdx}, number of points $mNumPoints")
@@ -90,9 +118,22 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             else   ->   return
         }
 
+        listener?.onMarkerMoved(marker, position)
+
         invalidate()
         requestLayout()
     }
+
+    fun setMarkerColor(marker: Int, color: Int) {
+        val mMarker = if(marker == MARKER_1) mMarker1 else mMarker2
+
+        mMarker.paint.color = color
+
+        invalidate()
+        requestLayout()
+    }
+
+    fun setEventListener(listener: SectorPickerEventListener) { this.listener = listener }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         // Account for padding
@@ -137,9 +178,9 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 mNumPoints - 1
             }
 
-            // Draw fill - always fill Marker 1 -> Marker 2, clockwise
-            val start = (marker2Pos * 360f / mNumPoints)
-            var sweep = (marker1Pos * 360f / mNumPoints) - start
+            // Draw fill - always fill Marker 1 -> Marker 2, check direction
+            val start = ((if (fillDirection) marker1Pos else marker2Pos) * 360f / mNumPoints)
+            var sweep = ((if(fillDirection) marker2Pos else marker1Pos) * 360f / mNumPoints) - start
             if(sweep < 0)
                 sweep += 360
             drawArc(mFillBounds!!, start - 90, sweep, true, fillPaint)
@@ -161,8 +202,14 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             if(!result) {
                 when(event?.action) {
                     MotionEvent.ACTION_UP -> {
-                        mMarker1.isMoving = false       // Clear moving flag
-                        mMarker2.isMoving = false
+                        if(mMarker1.isMoving) {
+                            mMarker1.isMoving = false       // Clear moving flag
+                            listener?.onMarkerMoved(MARKER_1, mMarker1.pointIdx)
+                        }
+                        if(mMarker2.isMoving) {
+                            mMarker2.isMoving = false       // Clear moving flag
+                            listener?.onMarkerMoved(MARKER_2, mMarker2.pointIdx)
+                        }
                         true
                     }
                     else -> false
@@ -176,10 +223,10 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             e?.apply {
                 // Check position on down event and return false if not within either Marker
                 // Check Marker 1
-                var xMin = mPoints[mMarker1.pointIdx].xPos - mMarker1.radius
-                var xMax = mPoints[mMarker1.pointIdx].xPos + mMarker1.radius
-                var yMin = mPoints[mMarker1.pointIdx].yPos - mMarker1.radius
-                var yMax = mPoints[mMarker1.pointIdx].yPos + mMarker1.radius
+                var xMin = mPoints[mMarker1.pointIdx].xPos - mMarker1.radius * touchMargin
+                var xMax = mPoints[mMarker1.pointIdx].xPos + mMarker1.radius * touchMargin
+                var yMin = mPoints[mMarker1.pointIdx].yPos - mMarker1.radius * touchMargin
+                var yMax = mPoints[mMarker1.pointIdx].yPos + mMarker1.radius * touchMargin
 
                 if (x in xMin..xMax && y in yMin..yMax) {
                     SectorPickerLog("onDown", "Marker1 Down")
@@ -188,10 +235,10 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 }
 
                 // Check Marker 2
-                xMin = mPoints[mMarker2.pointIdx].xPos - mMarker2.radius
-                xMax = mPoints[mMarker2.pointIdx].xPos + mMarker2.radius
-                yMin = mPoints[mMarker2.pointIdx].yPos - mMarker2.radius
-                yMax = mPoints[mMarker2.pointIdx].yPos + mMarker2.radius
+                xMin = mPoints[mMarker2.pointIdx].xPos - mMarker2.radius * touchMargin
+                xMax = mPoints[mMarker2.pointIdx].xPos + mMarker2.radius * touchMargin
+                yMin = mPoints[mMarker2.pointIdx].yPos - mMarker2.radius * touchMargin
+                yMax = mPoints[mMarker2.pointIdx].yPos + mMarker2.radius * touchMargin
 
                 return if(x in xMin..xMax && y in yMin..yMax) {
                     SectorPickerLog("onDown", "Marker2 Down")
