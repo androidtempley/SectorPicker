@@ -24,7 +24,7 @@ Include 'SectorPicker' in your layout XML:
 Add as a dependency into your application build.gradle file:
 ```groovy
 dependencies {
-    implementation 'com.github.androidtempley:SectorPicker:v1.0.1'
+    implementation 'com.github.androidtempley:SectorPicker:v1.0.2'
 }
 ```
 
