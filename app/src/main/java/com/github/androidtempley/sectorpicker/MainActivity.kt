@@ -38,7 +38,6 @@ class MainActivity : AppCompatActivity() {
                 updateStatsText()
             }
         })
-        sectorPicker.fillDirection = SectorPicker.CLOCKWISE // Set fill direction
 
         updateStatsText()
     }
