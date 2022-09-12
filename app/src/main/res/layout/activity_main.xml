@@ -24,8 +24,10 @@
         app:numPoints="12"
         app:pointRadius="8dp"
         app:markerRadius="20dp"
+        app:marker1StartPosition="4"
         app:markerLineWidth="8dp"
-        app:fillColor="#5500AA00" />
+        app:fillColor="#5500AA00"
+        app:fillDirection="clockwise" />
 
     <SeekBar
         android:layout_width="match_parent"

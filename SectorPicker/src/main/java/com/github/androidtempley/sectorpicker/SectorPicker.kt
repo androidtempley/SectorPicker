@@ -72,6 +72,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 ta.getDimension(R.styleable.SectorPicker_markerRadius, 0f),
                 ta.getDimension(R.styleable.SectorPicker_markerLineWidth, 0f),
                 ta.getInteger(R.styleable.SectorPicker_marker2StartPosition, 0))
+            fillDirection = ta.getInteger(R.styleable.SectorPicker_fillDirection, 0) == 0
 
             if(mMarker1.pointIdx >= mNumPoints)
                 throw IndexOutOfBoundsException("Marker 1 position out of bounds, position ${mMarker1.pointIdx}, number of points $mNumPoints")
