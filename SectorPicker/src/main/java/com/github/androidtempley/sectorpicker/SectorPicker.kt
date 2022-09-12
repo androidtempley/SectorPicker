@@ -47,6 +47,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
         get() = mPointsColor
         set(color) {
             mPointsColor = color
+            pointPaint.color = color
             invalidate()
             requestLayout()
         }
@@ -56,6 +57,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
         get() = mFillColor
         set(color) {
             mFillColor = color
+            fillPaint.color = color
             invalidate()
             requestLayout()
         }
@@ -115,6 +117,15 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
         }
 
         listener?.onMarkerMoved(marker, position)
+
+        invalidate()
+        requestLayout()
+    }
+
+    fun setMarkerColor(marker: Int, color: Int) {
+        val mMarker = if(marker == MARKER_1) mMarker1 else mMarker2
+
+        mMarker.paint.color = color
 
         invalidate()
         requestLayout()
