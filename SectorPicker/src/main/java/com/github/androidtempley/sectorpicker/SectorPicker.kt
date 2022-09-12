@@ -16,6 +16,8 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     companion object {
         const val MARKER_1 = 1
         const val MARKER_2 = 2
+        const val CLOCKWISE = true
+        const val ANTICLOCKWISE = !CLOCKWISE
         private const val ENABLE_LOGGING = false
     }
 
@@ -43,6 +45,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     private var mPointsColor: Int
     private var mPointsRadius: Float
     private var mFillColor: Int
+    var fillDirection = CLOCKWISE
 
     private var mMarker1: Marker
     private var mMarker2: Marker
@@ -148,8 +151,8 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             }
 
             // Draw fill - always fill Marker 1 -> Marker 2, clockwise
-            val start = (marker2Pos * 360f / mNumPoints)
-            var sweep = (marker1Pos * 360f / mNumPoints) - start
+            val start = ((if (fillDirection) marker1Pos else marker2Pos) * 360f / mNumPoints)
+            var sweep = ((if(fillDirection) marker2Pos else marker1Pos) * 360f / mNumPoints) - start
             if(sweep < 0)
                 sweep += 360
             drawArc(mFillBounds!!, start - 90, sweep, true, fillPaint)
