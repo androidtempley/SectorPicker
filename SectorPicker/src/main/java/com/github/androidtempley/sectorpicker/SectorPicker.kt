@@ -12,6 +12,7 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
+
 class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs) {
     companion object {
         const val MARKER_1 = 1
@@ -22,6 +23,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     }
 
     private var listener: SectorPickerEventListener? = null
+    private var clickListener: OnClickListener? = null
 
     private var mNumPoints: Int
     var numberOfPoints: Int
@@ -42,6 +44,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             invalidate()
             requestLayout()
         }
+
     private var mPointsColor: Int
     var pointColor: Int
         get() = mPointsColor
@@ -51,6 +54,7 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             invalidate()
             requestLayout()
         }
+
     private var mPointsRadius: Float
     private var mFillColor: Int
     var fillColor: Int
@@ -61,10 +65,13 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             invalidate()
             requestLayout()
         }
+
     var fillDirection = CLOCKWISE
 
     private var mMarker1: Marker
     private var mMarker2: Marker
+    private var mNodeState = true
+    private var mCircle = false
     private var mPoints = mutableListOf<Point>()
     private var mSectors = mutableListOf<Point>()
 
@@ -72,6 +79,9 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     private var mCenterX = 0f
     private var mCenterY = 0f
     private var mFillBounds: RectF? = null
+    private var mButtonWidth = 80f
+    private var mButtonHeight = 80f
+    private var mBitmap: Bitmap? = null
 
     var touchMargin = 1.2f      // Apply 20% increase to marker size as additional touch area
 
@@ -101,6 +111,10 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
         }
     }
 
+    fun setOnButtonClickListener(l: OnClickListener) {
+        clickListener = l
+    }
+
     fun getMarkerPosition(marker: Int): Int {
         return marker.let {
             when (it) {
@@ -109,6 +123,18 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 else -> -1
             }
         }
+    }
+
+    fun setFullCircleMode(circle: Boolean) {
+        mCircle = circle
+        invalidate()
+        requestLayout()
+    }
+
+    fun setMarkerState(state: Boolean) {
+        mNodeState = state
+        invalidate()
+        requestLayout()
     }
 
     fun setMarkerPosition(marker: Int, position: Int) {
@@ -129,6 +155,12 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
 
         mMarker.paint.color = color
 
+        invalidate()
+        requestLayout()
+    }
+
+    fun setButtonBitmap(icon: Bitmap) {
+        mBitmap = icon
         invalidate()
         requestLayout()
     }
@@ -179,10 +211,20 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
             }
 
             // Draw fill - always fill Marker 1 -> Marker 2, check direction
-            val start = ((if (fillDirection) marker1Pos else marker2Pos) * 360f / mNumPoints)
+            var start = ((if (fillDirection) marker1Pos else marker2Pos) * 360f / mNumPoints)
             var sweep = ((if(fillDirection) marker2Pos else marker1Pos) * 360f / mNumPoints) - start
+
+            // adjust sweep
             if(sweep < 0)
                 sweep += 360
+
+            if (mCircle) {
+                // draw full circle
+                start = 0F
+                sweep = 360F
+            }
+
+            // Draw arc
             drawArc(mFillBounds!!, start - 90, sweep, true, fillPaint)
 
             // Draw points
@@ -190,14 +232,65 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                 drawCircle(mPoints[i].xPos, mPoints[i].yPos, mPointsRadius, pointPaint)
             }
 
-            // Draw Markers, Marker 1 on top of Marker 2
-            drawCircle(mPoints[marker2Pos].xPos, mPoints[marker2Pos].yPos, mMarker2.radius, mMarker2.paint)
-            drawCircle(mPoints[marker1Pos].xPos, mPoints[marker1Pos].yPos, mMarker1.radius, mMarker1.paint)
+            if (mNodeState) {
+                // Draw Markers, Marker 1 on top of Marker 2
+                drawCircle(
+                    mPoints[marker2Pos].xPos,
+                    mPoints[marker2Pos].yPos,
+                    mMarker2.radius,
+                    mMarker2.paint
+                )
+                drawCircle(
+                    mPoints[marker1Pos].xPos,
+                    mPoints[marker1Pos].yPos,
+                    mMarker1.radius,
+                    mMarker1.paint
+                )
+            }
+
+            if (mBitmap != null) {
+                val bitmapResize = resize(mBitmap!!, mButtonWidth.toInt(), mButtonHeight.toInt())
+                drawBitmap(
+                    bitmapResize,
+                    mCenterX - bitmapResize.width / 2,
+                    mCenterY - bitmapResize.height / 2,
+                    null
+                )
+            }
+        }
+    }
+
+    private fun resize(image: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+        var image = image
+        return if (maxHeight > 0 && maxWidth > 0) {
+            val width = image.width
+            val height = image.height
+            val ratioBitmap = width.toFloat() / height.toFloat()
+            val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
+            var finalWidth = maxWidth
+            var finalHeight = maxHeight
+            if (ratioMax > ratioBitmap) {
+                finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
+            } else {
+                finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
+            }
+            image = Bitmap.createScaledBitmap(image, finalWidth, finalHeight, true)
+            image
+        } else {
+            image
         }
     }
 
     @SuppressLint("ClickableViewAccessibility") // Not a clickable view?
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+
+        val x = event!!.x.toInt()
+        val y = event.y.toInt()
+        if (x > (mCenterX - (mButtonWidth / 2)) && x < (mCenterX + (mButtonWidth / 2)) && y > (mCenterY - (mButtonHeight / 2)) && y < (mCenterY + (mButtonHeight / 2))) {
+            clickListener?.onClick(this)
+        }
+
+        // run gesture onTouchEvent
         return gestureDetector.onTouchEvent(event).let { result ->
             if(!result) {
                 when(event?.action) {
