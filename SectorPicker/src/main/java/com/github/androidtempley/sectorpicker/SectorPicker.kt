@@ -131,10 +131,18 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
         requestLayout()
     }
 
+    fun getFullCircleMode(): Boolean {
+        return mCircle
+    }
+
     fun setMarkerState(state: Boolean) {
         mNodeState = state
         invalidate()
         requestLayout()
+    }
+
+    fun getMarkerState(): Boolean {
+        return mNodeState
     }
 
     fun setMarkerPosition(marker: Int, position: Int) {
