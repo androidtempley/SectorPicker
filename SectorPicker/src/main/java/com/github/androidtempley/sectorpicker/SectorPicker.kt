@@ -11,6 +11,16 @@ import android.view.View
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
+import android.R.attr.name
+import android.widget.Toast
+
+import android.R.attr.name
+
+
+
+
+
+
 
 
 class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs) {
@@ -24,6 +34,12 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
 
     private var listener: SectorPickerEventListener? = null
     private var clickListener: OnClickListener? = null
+    private var doubleClickListener: OnClickListener? = null
+
+    // variables for counting two successive up-down events
+    var centreButtonDown = false
+    var centreButtonSingleTap = false
+    var centreButtonDoubleTap = false
 
     private var mNumPoints: Int
     var numberOfPoints: Int
@@ -109,6 +125,10 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
         } finally {
             ta.recycle()
         }
+    }
+
+    fun setOnButtonDoubleClickListener(l: OnClickListener) {
+        doubleClickListener = l
     }
 
     fun setOnButtonClickListener(l: OnClickListener) {
@@ -291,13 +311,6 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
 
     @SuppressLint("ClickableViewAccessibility") // Not a clickable view?
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-
-        val x = event!!.x.toInt()
-        val y = event.y.toInt()
-        if (x > (mCenterX - (mButtonWidth / 2)) && x < (mCenterX + (mButtonWidth / 2)) && y > (mCenterY - (mButtonHeight / 2)) && y < (mCenterY + (mButtonHeight / 2))) {
-            clickListener?.onClick(this)
-        }
-
         // run gesture onTouchEvent
         return gestureDetector.onTouchEvent(event).let { result ->
             if(!result) {
@@ -311,6 +324,16 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
                             mMarker2.isMoving = false       // Clear moving flag
                             listener?.onMarkerMoved(MARKER_2, mMarker2.pointIdx)
                         }
+                        if (centreButtonDown && centreButtonDoubleTap) {
+                            doubleClickListener?.onClick(this)
+                            centreButtonDoubleTap = false
+                            centreButtonDown = false
+                        }
+                        else if (centreButtonSingleTap) {
+                            clickListener?.onClick(this)
+                            centreButtonSingleTap = false
+                            centreButtonDown = false
+                        }
                         true
                     }
                     else -> false
@@ -320,8 +343,41 @@ class SectorPicker(context: Context, attrs: AttributeSet?) : View(context, attrs
     }
 
     private val gestureListener = object: GestureDetector.SimpleOnGestureListener() {
+
+        override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+            e?.apply {
+                if (centreButtonDown && x in (mCenterX - (mButtonWidth / 2))..(mCenterX + (mButtonWidth / 2)) && y in (mCenterY - (mButtonHeight / 2))..(mCenterY + (mButtonHeight / 2))) {
+                    centreButtonSingleTap = true
+                    //centreButtonDown = false
+                    return false
+                }
+            }
+            return true
+        }
+
+        override fun onDoubleTap(e: MotionEvent?): Boolean {
+            e?.apply {
+                if (centreButtonDown && x in (mCenterX - (mButtonWidth / 2))..(mCenterX + (mButtonWidth / 2)) && y in (mCenterY - (mButtonHeight / 2))..(mCenterY + (mButtonHeight / 2))) {
+                    centreButtonDoubleTap = true
+                    centreButtonSingleTap = false
+                    //centreButtonDown = false
+                    return true
+                }
+            }
+            return false
+        }
+
         override fun onDown(e: MotionEvent?): Boolean {
             e?.apply {
+
+                if (x in (mCenterX - (mButtonWidth / 2))..(mCenterX + (mButtonWidth / 2)) && y in (mCenterY - (mButtonHeight / 2))..(mCenterY + (mButtonHeight / 2))) {
+                    centreButtonDown = true
+                    return true
+                }
+//                else {
+//                    centreButtonDown = false
+//                }
+
                 // Check position on down event and return false if not within either Marker
                 // Check Marker 1
                 var xMin = mPoints[mMarker1.pointIdx].xPos - mMarker1.radius * touchMargin

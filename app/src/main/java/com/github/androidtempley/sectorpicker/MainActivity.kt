@@ -1,6 +1,7 @@
 package com.github.androidtempley.sectorpickerexample
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
@@ -15,6 +16,7 @@ import android.graphics.drawable.Drawable
 import androidx.core.content.res.ResourcesCompat
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 
 import android.graphics.drawable.BitmapDrawable
 
@@ -28,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var seekBar: SeekBar
     private lateinit var textView: TextView
     private var centreButtonState = false
+    private var centreButtonStyling = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +74,22 @@ class MainActivity : AppCompatActivity() {
             sectorPicker.setFullCircleMode(!centreButtonState)
             sectorPicker.setMarkerState(centreButtonState)
             centreButtonState = !centreButtonState
+        }
+
+        sectorPicker.setOnButtonDoubleClickListener {
+            centreButtonStyling = !centreButtonStyling
+            if (centreButtonStyling) {
+                sectorPicker.pointColor = Color.BLACK
+                sectorPicker.fillColor = R.color.charcoal_black
+                sectorPicker.setMarkerColor(SectorPicker.MARKER_1, R.color.white)
+                sectorPicker.setMarkerColor(SectorPicker.MARKER_2, R.color.white)
+            }
+            else {
+                sectorPicker.pointColor = Color.BLACK
+                sectorPicker.fillColor = R.color.teal_200
+                sectorPicker.setMarkerColor(SectorPicker.MARKER_1, Color.RED)
+                sectorPicker.setMarkerColor(SectorPicker.MARKER_2, Color.BLUE)
+            }
         }
 
         updateStatsText()
